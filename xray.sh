@@ -18,12 +18,12 @@ BEST_DOMAIN="saas.sin.fan"  # 默认优选域名
 
 ACTION=""
 
-# 自动建立终端快捷指令: 将当前脚本持久化保存并软链接到 xxx
-SCRIPT_DEST="/usr/local/bin/xray_script.sh"
-if [[ "$0" != "$SCRIPT_DEST" && -s "$0" ]]; then
-    cp -f "$0" "$SCRIPT_DEST" 2>/dev/null || true
-    chmod +x "$SCRIPT_DEST" 2>/dev/null || true
-    ln -sf "$SCRIPT_DEST" /usr/local/bin/xxx 2>/dev/null || true
+# =========================================================
+# 自动建立终端快捷指令: 强制写入系统环境变量目录
+# =========================================================
+if [[ "$0" != "/usr/bin/xxx" ]]; then
+    curl -sL "https://raw.githubusercontent.com/aa336818/xray/refs/heads/main/xray.sh" -o /usr/bin/xxx 2>/dev/null
+    chmod +x /usr/bin/xxx 2>/dev/null
 fi
 
 # =========================================================
@@ -191,7 +191,7 @@ print_node_info() {
     NODE_DOMAIN="${DOMAIN:-admin.com}"
     URL_PATH=$(echo "${XHTTP_PATH}" | sed 's/\//%2F/g')
     
-    # 链接核心参数：Address 填写优选域名 saas.sin.fan，Host 和 SNI 填写你的 Tunnel 绑定域名
+    # 链接核心参数
     VLESS_LINK="vless://${UUID}@${BEST_DOMAIN}:443?encryption=none&security=tls&type=xhttp&host=${NODE_DOMAIN}&path=${URL_PATH}&sni=${NODE_DOMAIN}#Argo-XHTTP-${NODE_DOMAIN}"
 
     echo -e "\n======================================================="
@@ -228,7 +228,8 @@ uninstall_all() {
     cloudflared service uninstall &>/dev/null || true
     rm -f /usr/local/bin/cloudflared
 
-    rm -f /usr/local/bin/xxx /usr/local/bin/x /usr/local/bin/xmenu /usr/local/bin/xray_script.sh
+    # 彻底清理所有可能的快捷方式名称
+    rm -f /usr/bin/xxx /usr/local/bin/xxx /usr/local/bin/x /usr/local/bin/xmenu /usr/local/bin/xray_script.sh
     echo -e "${GREEN}所有服务、配置文件及快捷指令已彻底清理完毕！${PLAIN}"
 }
 
