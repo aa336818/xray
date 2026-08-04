@@ -94,7 +94,7 @@ check_status() {
         XRAY_STATUS="${GREEN}[ 已安装并运行 ]${PLAIN}"
         if [[ -f "$CONFIG_FILE" ]]; then
             EX_PORT=$(jq -r '.inbounds[0].port // empty' "$CONFIG_FILE" 2>/dev/null)
-            [[ -n "$EX_PORT" ]] && XRAY_STATUS="${GREEN}[ 已安装并运行 ]${PLAIN} (端口:${EX_PORT})"
+            [[ -n "$EX_PORT" ]] && XRAY_STATUS="${GREEN}[ 已安装并运行 ]${PLAIN} (端口: ${EX_PORT})"
         fi
     else
         XRAY_STATUS="${RED}[ 未安装 / 未运行 ]${PLAIN}"
@@ -299,7 +299,7 @@ case "$ACTION" in
                 ;;
             5)
                 read -p "确定要卸载全部服务吗？[y/N]: " confirm
-                if [[ "$confirm" == "y" \vert{}\vert{} "$confirm" == "Y" ]]; then
+                if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
                     uninstall_all
                 fi
                 ;;
