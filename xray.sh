@@ -18,11 +18,11 @@ BEST_DOMAIN="saas.sin.fan"  # 默认优选域名
 
 ACTION=""
 
-# 自动建立终端快捷指令: 输入 xray 即可随时呼出脚本
+# 自动建立终端快捷指令: 输入 x 即可随时呼出脚本
 SCRIPT_PATH=$(readlink -f "$0" 2>/dev/null || echo "$0")
-if [[ -f "$SCRIPT_PATH" && ! -f "/usr/local/bin/xray" ]]; then
-    ln -sf "$SCRIPT_PATH" /usr/local/bin/xray 2>/dev/null || true
-    chmod +x /usr/local/bin/xray 2>/dev/null || true
+if [[ -f "$SCRIPT_PATH" ]]; then
+    ln -sf "$SCRIPT_PATH" /usr/local/bin/x 2>/dev/null || true
+    chmod +x /usr/local/bin/x 2>/dev/null || true
 fi
 
 # =========================================================
@@ -94,7 +94,7 @@ check_status() {
         XRAY_STATUS="${GREEN}[ 已安装并运行 ]${PLAIN}"
         if [[ -f "$CONFIG_FILE" ]]; then
             EX_PORT=$(jq -r '.inbounds[0].port // empty' "$CONFIG_FILE" 2>/dev/null)
-            [[ -n "$EX_PORT" ]] && XRAY_STATUS="${GREEN}[ 已安装并运行 ]${PLAIN} (端口: ${EX_PORT})"
+            [[ -n "$EX_PORT" ]] && XRAY_STATUS="${GREEN}[ 已安装并运行 ]${PLAIN} (端口:${EX_PORT})"
         fi
     else
         XRAY_STATUS="${RED}[ 未安装 / 未运行 ]${PLAIN}"
@@ -187,10 +187,10 @@ print_node_info() {
         [[ -n "$EX_PATH" ]] && XHTTP_PATH="$EX_PATH"
     fi
 
-    NODE_DOMAIN="${DOMAIN:-sinsin.9191876.xyz}"
+    NODE_DOMAIN="${DOMAIN:-admin.com}"
     URL_PATH=$(echo "${XHTTP_PATH}" | sed 's/\//%2F/g')
     
-    # 链接核心参数：Address 填写优选域名 saas.sin.fan，Host 和 SNI 填写自己的 Tunnel 绑定域名
+    # 链接核心参数：Address 填写优选域名 saas.sin.fan，Host 和 SNI 填写你的 Tunnel 绑定域名
     VLESS_LINK="vless://${UUID}@${BEST_DOMAIN}:443?encryption=none&security=tls&type=xhttp&host=${NODE_DOMAIN}&path=${URL_PATH}&sni=${NODE_DOMAIN}#Argo-XHTTP-${NODE_DOMAIN}"
 
     echo -e "\n======================================================="
@@ -227,7 +227,7 @@ uninstall_all() {
     cloudflared service uninstall &>/dev/null || true
     rm -f /usr/local/bin/cloudflared
 
-    rm -f /usr/local/bin/xray
+    rm -f /usr/local/bin/x
     echo -e "${GREEN}所有服务、配置文件及快捷指令已彻底清理完毕！${PLAIN}"
 }
 
@@ -264,7 +264,7 @@ case "$ACTION" in
         echo -e " 5) 卸载全部 (清理 Xray 与 Argo 隧道)"
         echo -e " 0) 退出"
         echo -e "======================================================="
-        echo -e " 💡 快捷指令: 在终端直接输入 ${GREEN}xray${PLAIN} 即可快捷呼出本面板"
+        echo -e " 💡 快捷指令: 在终端直接输入 ${GREEN}x${PLAIN} 即可快捷呼出本面板"
         echo -e "=======================================================\n"
         read -p "请选择操作 [0-5]: " choice
         case "$choice" in
@@ -276,14 +276,14 @@ case "$ACTION" in
                 ;;
             2)
                 read -p "请输入 Cloudflare Tunnel Token: " TUNNEL_TOKEN
-                read -p "请输入绑定的域名 (如 sinsin.9191876.xyz): " DOMAIN
+                read -p "请输入绑定的域名 (如 admin.com): " DOMAIN
                 install_cloudflared
                 ;;
             3)
                 read -p "请输入 Xray 本地监听端口 [默认: 8080]: " user_port
                 PORT=${user_port:-8080}
                 read -p "请输入 Cloudflare Tunnel Token: " TUNNEL_TOKEN
-                read -p "请输入绑定的域名 (如 sinsin.9191876.xyz): " DOMAIN
+                read -p "请输入绑定的域名 (如 admin.com): " DOMAIN
                 read -p "请输入优选域名 [默认: saas.sin.fan]: " user_best
                 BEST_DOMAIN=${user_best:-saas.sin.fan}
                 install_xray_core
@@ -291,15 +291,15 @@ case "$ACTION" in
                 print_node_info
                 ;;
             4)
-                read -p "请输入绑定的域名 [默认: sinsin.9191876.xyz]: " user_domain
-                DOMAIN=${user_domain:-sinsin.9191876.xyz}
+                read -p "请输入绑定的域名 [默认: admin.com]: " user_domain
+                DOMAIN=${user_domain:-admin.com}
                 read -p "请输入优选域名 [默认: saas.sin.fan]: " user_best
                 BEST_DOMAIN=${user_best:-saas.sin.fan}
                 print_node_info
                 ;;
             5)
                 read -p "确定要卸载全部服务吗？[y/N]: " confirm
-                if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
+                if [[ "$confirm" == "y" \vert{}\vert{} "$confirm" == "Y" ]]; then
                     uninstall_all
                 fi
                 ;;
