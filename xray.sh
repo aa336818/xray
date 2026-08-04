@@ -18,11 +18,12 @@ BEST_DOMAIN="saas.sin.fan"  # 默认优选域名
 
 ACTION=""
 
-# 自动建立终端快捷指令: 输入 x 即可随时呼出脚本
-SCRIPT_PATH=$(readlink -f "$0" 2>/dev/null || echo "$0")
-if [[ -f "$SCRIPT_PATH" ]]; then
-    ln -sf "$SCRIPT_PATH" /usr/local/bin/x 2>/dev/null || true
-    chmod +x /usr/local/bin/x 2>/dev/null || true
+# 自动建立终端快捷指令: 将当前脚本持久化保存并软链接到 xxx
+SCRIPT_DEST="/usr/local/bin/xray_script.sh"
+if [[ "$0" != "$SCRIPT_DEST" && -s "$0" ]]; then
+    cp -f "$0" "$SCRIPT_DEST" 2>/dev/null || true
+    chmod +x "$SCRIPT_DEST" 2>/dev/null || true
+    ln -sf "$SCRIPT_DEST" /usr/local/bin/xxx 2>/dev/null || true
 fi
 
 # =========================================================
@@ -227,7 +228,7 @@ uninstall_all() {
     cloudflared service uninstall &>/dev/null || true
     rm -f /usr/local/bin/cloudflared
 
-    rm -f /usr/local/bin/x
+    rm -f /usr/local/bin/xxx /usr/local/bin/x /usr/local/bin/xmenu /usr/local/bin/xray_script.sh
     echo -e "${GREEN}所有服务、配置文件及快捷指令已彻底清理完毕！${PLAIN}"
 }
 
@@ -264,7 +265,7 @@ case "$ACTION" in
         echo -e " 5) 卸载全部 (清理 Xray 与 Argo 隧道)"
         echo -e " 0) 退出"
         echo -e "======================================================="
-        echo -e " 💡 快捷指令: 在终端直接输入 ${GREEN}x${PLAIN} 即可快捷呼出本面板"
+        echo -e " 💡 快捷指令: 在终端直接输入 ${GREEN}xxx${PLAIN} 即可快捷呼出本面板"
         echo -e "=======================================================\n"
         read -p "请选择操作 [0-5]: " choice
         case "$choice" in
