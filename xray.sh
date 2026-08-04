@@ -9,7 +9,7 @@ YELLOW='\033[0;33m'
 PLAIN='\033[0m'
 
 CONFIG_FILE="/usr/local/etc/xray/config.json"
-PORT=8080
+PORT=8899
 UUID=$(cat /proc/sys/kernel/random/uuid 2>/dev/null || echo "19c6c3af-809f-4cd2-bbbb-9b1cf528cfc1")
 XHTTP_PATH="/xhttp-tunnel"
 DOMAIN=""
@@ -271,8 +271,8 @@ case "$ACTION" in
         read -p "请选择操作 [0-5]: " choice
         case "$choice" in
             1)
-                read -p "请输入 Xray 本地监听端口 [默认: 8080]: " user_port
-                PORT=${user_port:-8080}
+                read -p "请输入 Xray 本地监听端口 [默认: 8899]: " user_port
+                PORT=${user_port:-8899}
                 install_xray_core
                 print_node_info
                 ;;
@@ -282,8 +282,8 @@ case "$ACTION" in
                 install_cloudflared
                 ;;
             3)
-                read -p "请输入 Xray 本地监听端口 [默认: 8080]: " user_port
-                PORT=${user_port:-8080}
+                read -p "请输入 Xray 本地监听端口 [默认: 8899]: " user_port
+                PORT=${user_port:-8899}
                 read -p "请输入 Cloudflare Tunnel Token: " TUNNEL_TOKEN
                 read -p "请输入绑定的域名 (如 admin.com): " DOMAIN
                 read -p "请输入优选域名 [默认: saas.sin.fan]: " user_best
