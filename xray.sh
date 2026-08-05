@@ -277,17 +277,35 @@ case "$ACTION" in
                 print_node_info
                 ;;
             2)
-                read -p "请输入 Cloudflare Tunnel Token: " TUNNEL_TOKEN
-                read -p "请输入绑定的域名 (如 admin.com): " DOMAIN
+                TUNNEL_TOKEN=""
+                while [[ -z "$TUNNEL_TOKEN" ]]; do
+                    read -p "请输入 Cloudflare Tunnel Token: " TUNNEL_TOKEN
+                done
+                
+                DOMAIN=""
+                while [[ -z "$DOMAIN" ]]; do
+                    read -p "请输入绑定的域名 (如 admin.com): " DOMAIN
+                done
+                
                 install_cloudflared
                 ;;
             3)
                 read -p "请输入 Xray 本地监听端口 [默认: 8899]: " user_port
                 PORT=${user_port:-8899}
-                read -p "请输入 Cloudflare Tunnel Token: " TUNNEL_TOKEN
-                read -p "请输入绑定的域名 (如 admin.com): " DOMAIN
+                
+                TUNNEL_TOKEN=""
+                while [[ -z "$TUNNEL_TOKEN" ]]; do
+                    read -p "请输入 Cloudflare Tunnel Token: " TUNNEL_TOKEN
+                done
+                
+                DOMAIN=""
+                while [[ -z "$DOMAIN" ]]; do
+                    read -p "请输入绑定的域名 (如 admin.com): " DOMAIN
+                done
+                
                 read -p "请输入优选域名 [默认: saas.sin.fan]: " user_best
                 BEST_DOMAIN=${user_best:-saas.sin.fan}
+                
                 install_xray_core
                 install_cloudflared
                 print_node_info
