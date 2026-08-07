@@ -3,7 +3,9 @@
 ```bash
 bash <(curl -sL https://raw.githubusercontent.com/aa336818/xray/refs/heads/main/xray.sh)
 ```
-
+```bash
+bash <(curl -sL https://raw.githubusercontent.com/aa336818/xray/refs/heads/main/xray1.sh)
+```
 ### ⚡ 一键带参数部署命令
 
 ```bash
