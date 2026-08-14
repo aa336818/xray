@@ -3,7 +3,7 @@
 # ==========================================
 #  自定义配置项
 # ==========================================
-SHORTCUT_NAME="xxx"  # 快捷指令名称（可自定义修改为 xxx、xray 等）
+SHORTCUT_NAME="xxx"  # 快捷指令名称（可自定义修改）
 
 # 检查 root 权限
 if [ "$EUID" -ne 0 ]; then
@@ -41,10 +41,10 @@ get_public_ip() {
     PUB_IP=$(curl -s https://api.ipify.org || curl -s https://ipv4.icanhazip.com)
 }
 
-# 安装并启动 Cloudflare Argo Tunnel
+# 配置并启动 Cloudflare Argo Tunnel
 setup_argo() {
     local local_port=$1
-    local argo_input=$2
+    local argo_token=$2
 
     echo "📦 正在下载并配置 Cloudflare Tunnel (cloudflared)..."
     ARCH=$(uname -m)
@@ -60,20 +60,13 @@ setup_argo() {
     systemctl stop cloudflared &>/dev/null
     cloudflared service uninstall &>/dev/null
 
-    if [ -n "$argo_input" ]; then
-        if [[ "$argo_input" == eyJ* ]]; then
-            # 检测到输入 Token，追加询问在 Cloudflare 上绑定的固定域名
-            echo ""
-            read -p "📌 检测到输入的是 Token，请输入你在 CF 后台为该 Tunnel 绑定的固定域名: " REAL_DOMAIN
-            cloudflared service install "$argo_input"
-            systemctl start cloudflared
-            systemctl enable cloudflared
-            ARGO_DOMAIN="${REAL_DOMAIN:-saas.sin.fan}"
-        else
-            ARGO_DOMAIN="$argo_input"
-        fi
+    if [ -n "$argo_token" ]; then
+        echo "⚡ 正在安装 Cloudflare 固定 Tunnel 服务..."
+        cloudflared service install "$argo_token"
+        systemctl start cloudflared
+        systemctl enable cloudflared
     else
-        echo "⚡ 未输入 Token，启动 Argo Quick Tunnel 快速隧道..."
+        echo "⚡ 未输入 Token，正在启动 Argo Quick Tunnel 临时隧道..."
         nohup cloudflared tunnel --url http://127.0.0.1:$local_port > /tmp/argo.log 2>&1 &
         sleep 5
         ARGO_DOMAIN=$(grep -oE 'https://[a-zA-Z0-9-]+\.trycloudflare\.com' /tmp/argo.log | head -n 1 | sed 's/https:\/\///')
@@ -101,7 +94,11 @@ install_xhttp_argo() {
     XHTTP_PATH="/xhttp-$(openssl rand -hex 4)"
     LOCAL_PORT=8080
 
-    read -p "请输入你的 Argo 域名或 Token (留空将启动临时 Quick Tunnel 隧道): " ARGO_INPUT
+    read -p "1. 请输入 Cloudflare Tunnel Token (留空启动临时隧道): " ARGO_TOKEN
+    if [ -n "$ARGO_TOKEN" ]; then
+        read -p "   └─📌 请输入该 Tunnel 在 CF 绑定的域名 (例: ususus.9191876.xyz): " CUSTOM_DOMAIN
+        ARGO_DOMAIN="${CUSTOM_DOMAIN:-saas.sin.fan}"
+    fi
 
     cat <<EOF > /usr/local/etc/xray/config.json
 {
@@ -127,7 +124,7 @@ EOF
 
     systemctl restart xray
     systemctl enable xray
-    setup_argo $LOCAL_PORT "$ARGO_INPUT"
+    setup_argo $LOCAL_PORT "$ARGO_TOKEN"
 
     NODE_DOMAIN="${ARGO_DOMAIN:-saas.sin.fan}"
     VLESS_LINK="vless://${UUID}@${NODE_DOMAIN}:443?security=tls&encryption=none&type=xhttp&path=${XHTTP_PATH}&host=${NODE_DOMAIN}&sni=${NODE_DOMAIN}#Argo-XHTTP-Node"
@@ -161,10 +158,10 @@ install_reality() {
     echo "   配置 Mode 2: Xray + VLESS-REALITY 直连"
     echo "=========================================="
 
-    read -p "请输入 REALITY 伪装域名 SNI (默认: www.microsoft.com): " CUSTOM_SNI
+    read -p "1. 请输入 REALITY 伪装域名 SNI (默认: www.microsoft.com): " CUSTOM_SNI
     SNI=${CUSTOM_SNI:-"www.microsoft.com"}
 
-    read -p "请输入监听端口 (默认: 443，有宝塔建议填 8443): " CUSTOM_PORT
+    read -p "2. 请输入监听端口 (默认: 443，有宝塔建议填 8443): " CUSTOM_PORT
     PORT=${CUSTOM_PORT:-443}
 
     UUID=$(/usr/local/bin/xray uuid)
@@ -239,11 +236,17 @@ install_both() {
     echo "   配置 Mode 3: 同时安装 XHTTP+Argo 与 REALITY"
     echo "=========================================="
 
-    read -p "1/3 请输入你的 Argo 域名或 Token (留空启动临时 Quick Tunnel): " ARGO_INPUT
-    read -p "2/3 请输入 REALITY 伪装域名 SNI (默认: www.microsoft.com): " CUSTOM_SNI
+    read -p "1. 请输入你的 Cloudflare Tunnel Token (留空启动临时隧道): " ARGO_TOKEN
+    if [ -n "$ARGO_TOKEN" ]; then
+        read -p "   └─📌 请输入该 Tunnel 在 CF 绑定的域名 (例: ususus.9191876.xyz): " CUSTOM_DOMAIN
+        ARGO_DOMAIN="${CUSTOM_DOMAIN:-saas.sin.fan}"
+    fi
+
+    echo ""
+    read -p "2. 请输入 REALITY 伪装域名 SNI (默认: www.microsoft.com): " CUSTOM_SNI
     SNI=${CUSTOM_SNI:-"www.microsoft.com"}
 
-    read -p "3/3 请输入 REALITY 直连监听端口 (默认: 443，有宝塔建议填 8443): " CUSTOM_PORT
+    read -p "3. 请输入 REALITY 直连监听端口 (默认: 443，有宝塔建议填 8443): " CUSTOM_PORT
     PORT=${CUSTOM_PORT:-443}
 
     UUID=$(/usr/local/bin/xray uuid)
@@ -299,7 +302,7 @@ EOF
 
     systemctl restart xray
     systemctl enable xray
-    setup_argo $LOCAL_PORT "$ARGO_INPUT"
+    setup_argo $LOCAL_PORT "$ARGO_TOKEN"
 
     NODE_DOMAIN="${ARGO_DOMAIN:-saas.sin.fan}"
     XHTTP_LINK="vless://${UUID}@${NODE_DOMAIN}:443?security=tls&encryption=none&type=xhttp&path=${XHTTP_PATH}&host=${NODE_DOMAIN}&sni=${NODE_DOMAIN}#Argo-XHTTP"
