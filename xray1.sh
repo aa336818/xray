@@ -3,7 +3,7 @@
 # ==========================================
 #  自定义配置项
 # ==========================================
-SHORTCUT_NAME="xxx"  # 快捷指令名称（可修改为 xxx、xray 等）
+SHORTCUT_NAME="xxx"  # 快捷指令名称（可自定义修改为 xxx、xray 等）
 
 # 检查 root 权限
 if [ "$EUID" -ne 0 ]; then
@@ -62,10 +62,13 @@ setup_argo() {
 
     if [ -n "$argo_input" ]; then
         if [[ "$argo_input" == eyJ* ]]; then
+            # 检测到输入 Token，追加询问在 Cloudflare 上绑定的固定域名
+            echo ""
+            read -p "📌 检测到输入的是 Token，请输入你在 CF 后台为该 Tunnel 绑定的固定域名: " REAL_DOMAIN
             cloudflared service install "$argo_input"
             systemctl start cloudflared
             systemctl enable cloudflared
-            ARGO_DOMAIN="你的固定 Argo 域名"
+            ARGO_DOMAIN="${REAL_DOMAIN:-saas.sin.fan}"
         else
             ARGO_DOMAIN="$argo_input"
         fi
@@ -161,7 +164,7 @@ install_reality() {
     read -p "请输入 REALITY 伪装域名 SNI (默认: www.microsoft.com): " CUSTOM_SNI
     SNI=${CUSTOM_SNI:-"www.microsoft.com"}
 
-    read -p "请输入监听端口 (默认: 443): " CUSTOM_PORT
+    read -p "请输入监听端口 (默认: 443，有宝塔建议填 8443): " CUSTOM_PORT
     PORT=${CUSTOM_PORT:-443}
 
     UUID=$(/usr/local/bin/xray uuid)
@@ -240,7 +243,7 @@ install_both() {
     read -p "2/3 请输入 REALITY 伪装域名 SNI (默认: www.microsoft.com): " CUSTOM_SNI
     SNI=${CUSTOM_SNI:-"www.microsoft.com"}
 
-    read -p "3/3 请输入 REALITY 直连监听端口 (默认: 443): " CUSTOM_PORT
+    read -p "3/3 请输入 REALITY 直连监听端口 (默认: 443，有宝塔建议填 8443): " CUSTOM_PORT
     PORT=${CUSTOM_PORT:-443}
 
     UUID=$(/usr/local/bin/xray uuid)
