@@ -267,7 +267,8 @@ case "$ACTION" in
         echo -e " 0) 退出"
         echo -e "======================================================="
         echo -e " 💡 快捷指令: 在终端直接输入 ${GREEN}xxx${PLAIN} 即可快捷呼出本面板"
-        echo -e "=======================================================\n"
+        echo -e "bash <(curl -sL https://raw.githubusercontent.com/aa336818/xray/refs/heads/main/xray.sh)"
+        echo -e "======================================================="
         read -p "请选择操作 [0-5]: " choice
         case "$choice" in
             1)
